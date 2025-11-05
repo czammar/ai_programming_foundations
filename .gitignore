@@ -208,3 +208,5 @@ __marimo__/
 
 # Custom
 .DS_store
+.csv
+.json
