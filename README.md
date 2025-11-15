@@ -59,3 +59,13 @@ python -m ipykernel install --user --name=ai_tecmilenio --display-name="Python (
 jupyter notebook # Desplegar Jupyter Notebook
 jupyter lab # Desplegar Jupyter Lab
 ```
+
+# 3. ¿Cómo correr las aplicaciones de streamlit?
+
+Con el ambiente virtual activo:
+
+```
+pip install streamlit
+streamlit run path/to/my_app.py # Run the dashboard
+streamlit run ./src/streamlit/04_app_pima.py # Class example
+```
