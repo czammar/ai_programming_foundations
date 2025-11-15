@@ -22,7 +22,7 @@ def load_data():
     Se eliminan las filas donde Glucose, BloodPressure, SkinThickness, Insulin,
     o BMI son 0, ya que 0 en estos casos indica un valor faltante.
     """
-    # URL del dataset (UCI Machine Learning Repository)
+    # URL del dataset (apunta a datos del repositorio de la clase)
     data_url = 'https://raw.githubusercontent.com/czammar/ai_programming_foundations/refs/heads/main/data/pima_diabetes.csv'
     
     data = pd.read_csv(data_url)
@@ -44,6 +44,7 @@ df = load_data()
 def show_eda_insights(data):
     st.header("1. Exploración de Insights del Dataset Pima Indian Diabetes")
     
+    # Paginaciones del dashboard...
     tab1, tab2, tab3 = st.tabs(["Estadísticas", "Distribuciones", "Correlación"])
     
     with tab1:
@@ -59,10 +60,10 @@ def show_eda_insights(data):
             (es un dataset desbalanceado).
             """
         )
-        
+
     with tab2:
         st.subheader("Visualización de Distribuciones por Outcome")
-        
+
         # Histograma para Glucose
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.histplot(data=data, x='Glucose', hue='Outcome', kde=True, bins=25, 
@@ -70,9 +71,10 @@ def show_eda_insights(data):
         ax.set_title('Distribución de Glucose por Outcome (0: No Diabetes, 1: Diabetes)')
         ax.set_xlabel('Concentración de Glucose')
         ax.set_ylabel('Frecuencia')
+        # Aqui le damos a streamlit plot como objeto de pyplot...
         st.pyplot(fig)
         plt.close(fig)
-        
+
         st.markdown(
             """
             **Insight:** Las personas con diabetes (Outcome = 1) tienden
@@ -82,7 +84,7 @@ def show_eda_insights(data):
             """
         )
         
-        # Histograma para IMC
+        # Histograma para BMI
         fig_bmi, ax_bmi = plt.subplots(figsize=(10, 6))
         sns.histplot(data=data, x='BMI', hue='Outcome', kde=True, bins=25,
                      palette={0: '#3498db', 1: '#e74c3c'}, ax=ax_bmi)
@@ -120,36 +122,37 @@ def show_eda_insights(data):
 # --- Sección 2: Entrenamiento y Outcomes del Modelo ---
 def show_model_results(data):
     st.header("2. Outcomes del Modelo de Regresión Logística")
-    
+
     # 1. Preparación de datos
     X = data.drop('Outcome', axis=1)
     y = data['Outcome']
-    
+
     # Dividir datos
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=42, stratify=y
     )
-    
+
     # 2. Entrenamiento del Modelo
     model = LogisticRegression(solver='liblinear', random_state=42, max_iter=1000)
     model.fit(X_train, y_train)
-    
+
     # 3. Predicciones
     y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)[:, 1]
-    
-    
+
     # --- Pestañas de Outcomes ---
-    tab_metrics, tab_prob, tab_table = st.tabs(["Métricas y Errores", "Curva ROC y Probabilidades", "Datos y Predicciones"])
+    tab_metrics, tab_prob, tab_table = st.tabs(
+        ["Métricas y Errores", "Curva ROC y Probabilidades", "Datos y Predicciones"]
+        )
     
     with tab_metrics:
         st.subheader("Matriz de Confusión y Reporte de Clasificación")
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.markdown("##### Matriz de Confusión")
             cm = confusion_matrix(y_test, y_pred)
-            
+
             fig_cm, ax_cm = plt.subplots(figsize=(6, 5))
             sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False,
                         xticklabels=['No Diabetes (0)', 'Diabetes (1)'],
@@ -160,7 +163,7 @@ def show_model_results(data):
             ax_cm.set_title('Matriz de Confusión')
             st.pyplot(fig_cm)
             plt.close(fig_cm)
-            
+
         with col2:
             st.markdown("##### Reporte de Clasificación")
             report = classification_report(
@@ -172,8 +175,10 @@ def show_model_results(data):
             st.markdown(
                 """
                 **Métricas (Macro Avg):**
-                - **Precisión (Precision):** Del total de predicciones positivas para una clase, cuántas fueron correctas.
-                - **Recuperación (Recall):** De todos los casos reales de una clase, cuántos se predijeron correctamente.
+                - **Precisión (Precision):** Del total de predicciones
+                positivas para una clase, cuántas fueron correctas.
+                - **Recuperación (Recall):** De todos los casos reales 
+                de una clase, cuántos se predijeron correctamente.
                 - **F1-Score:** Media armónica de precisión y recuperación.
                 """
             )
@@ -220,7 +225,10 @@ def show_model_results(data):
             st.pyplot(fig_roc)
             plt.close(fig_roc)
             
-            st.markdown(f"**AUC:** Un valor de AUC de **{roc_auc:.2f}** indica la capacidad del modelo para distinguir entre las clases positiva y negativa. Cuanto más cerca de 1, mejor.")
+            st.markdown(
+                f"""**AUC:** Un valor de AUC de **{roc_auc:.2f}** indica la 
+                capacidad del modelo para distinguir entre las clases 
+                positiva y negativa. Cuanto más cerca de 1, mejor.""")
             
     with tab_table:
         st.subheader("Datos de Prueba y Predicciones del Modelo")
@@ -232,7 +240,9 @@ def show_model_results(data):
         results_df['probability (y=1)'] = y_proba.round(4)
         
         # Calcular el error: 1 si la predicción es incorrecta, 0 si es correcta
-        results_df['Error'] = np.where(results_df['real_Outcome'] == results_df['predicted'], 'Correcto', 'Incorrecto')
+        results_df['Error'] = np.where(
+            results_df['real_Outcome'] == results_df['predicted'],
+            'Correcto', 'Incorrecto')
         
         st.markdown(
             """
@@ -242,7 +252,9 @@ def show_model_results(data):
         )
         
         # Mostrar las primeras 20 filas ordenadas por probabilidad para ver el límite de decisión
-        st.dataframe(results_df.sort_values(by='probability (y=1)', ascending=False).head(20), use_container_width=True)
+        st.dataframe(
+            results_df.sort_values(by='probability (y=1)', ascending=False).head(20),
+            use_container_width=True)
 
 # --- Estructura Principal de la App ---
 
@@ -256,7 +268,8 @@ show_model_results(df)
 
 st.markdown(
     """
-    **Nota sobre la limpieza de datos:** Se imputaron los valores 0 (que representan datos faltantes) 
+    **Nota sobre la limpieza de datos:** Se imputaron los valores 0 
+    (que representan datos faltantes) 
     con la media de la columna correspondiente para permitir el entrenamiento del modelo.
     """
 )
